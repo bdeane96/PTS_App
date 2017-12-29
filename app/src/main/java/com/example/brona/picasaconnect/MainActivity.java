@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -29,7 +30,8 @@ public class MainActivity extends AppCompatActivity {
         String[] permissionsRequired = permissions.getPermissions();
         requestPermissions(permissionsRequired);
 
-        //authernticationmanager
+        Log.d("Logging", "Initial log");
+        //authenticationmanager
         authenticationManager = new AuthenticationManager(this);
         //login button
         Button loginButton = (Button)findViewById(R.id.loginButton);
@@ -38,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast toast = Toast.makeText(context, "works", Toast.LENGTH_SHORT);
                 toast.show();
                 //retrieve account names
+                startService(new Intent(context,TheService.class));//use to start the services
                 authenticationManager.showAccountPicker(MainActivity.this);
 
             }
