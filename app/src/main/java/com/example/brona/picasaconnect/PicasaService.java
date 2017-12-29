@@ -4,19 +4,10 @@ package com.example.brona.picasaconnect;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.util.Log;
-/*
-import com.pixby.gphotos.dagger.ApplicationContext;
-import com.pixby.gphotos.model.AlbumResponse;
-import com.pixby.gphotos.model.PhotoResponse;
-*/
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.TimeUnit;
-
-//import javax.inject.Inject;
-//import javax.inject.Singleton;
-
 import io.reactivex.Observable;
 import okhttp3.Cache;
 import okhttp3.CacheControl;

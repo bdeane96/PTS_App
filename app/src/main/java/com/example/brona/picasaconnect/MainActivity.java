@@ -18,7 +18,6 @@ public class MainActivity extends AppCompatActivity {
 
     static Context context;
     AuthenticationManager authenticationManager;
-    DataManager dataManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
                 //retrieve account names
                 startService(new Intent(context,TheService.class));//use to start the services
                 authenticationManager.showAccountPicker(MainActivity.this);
-
             }
         });
 
