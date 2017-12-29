@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">PicasaConnect</string>
+    <string name="filepathuploaded">uploadedfilepath</string>
 </resources>
