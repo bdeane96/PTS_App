@@ -38,7 +38,12 @@ public class TheService extends Service{
     @Override
     public void onCreate() {
         /* cancel if service is  already existed */
-        sharedPref = this.getSharedPreferences("uploadedfilepath", Context.MODE_PRIVATE);
+
+        sharedPref = this.getSharedPreferences("uploadedfilepath", MainActivity.MODE_PRIVATE);
+        PicasaConnect picasaConnect = new PicasaConnect();
+        picasaConnect.retrieveAlbums(getToken(), getAccountName());
+
+
         if(mTimer!=null)
             mTimer.cancel();
         else
@@ -79,16 +84,16 @@ public class TheService extends Service{
                 .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, null,
                         null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
         if (cursor.moveToFirst()) {
-            Log.i("Process", "finding filepaths");
+            Log.i("Gallery", "finding filepaths");
             String lastuploaded = getFilePathMostRecentUpload();
             if(!lastuploaded.isEmpty()) {
-                Log.i("Process", "finding new filepaths");
+                Log.i("Gallery", "finding new filepaths");
                 File imageFile = new File(lastuploaded);
                 //check that file hasnt been deleted...if has been deleted need to connect to web album and get second last uploaded
                 if(imageFile.exists()) {
-                    Log.i("Last uploaded", lastuploaded);
+                    Log.i("Gallery", "Last uploaded " + lastuploaded);
                     while (!cursor.getString(1).equals(lastuploaded)) {
-                        Log.i("File path", cursor.getString(1));
+                        Log.i("Gallery", "New image file path " + cursor.getString(1));
                         File img = new File(cursor.getString(1));
                         try{
                             Metadata metadata = ImageMetadataReader.readMetadata(img);
@@ -119,7 +124,7 @@ public class TheService extends Service{
             String imageLocation = cursor.getString(1);
             File imageFile = new File(imageLocation);
             if (imageFile.exists()) {
-                Log.i("Process", "Last image uploaded " + imageLocation);
+                Log.i("Gallery", "Last image uploaded " + imageLocation);
                 setFilePathMostRecentUpload(imageLocation);
             }
 
@@ -136,4 +141,13 @@ public class TheService extends Service{
         editor.putString(getString(R.string.filepathuploaded), filepath);
         editor.apply();
     }
+
+    private String getToken(){
+        return sharedPref.getString(getString(R.string.token), "");
+    }
+
+    private String getAccountName(){
+        return sharedPref.getString(getString(R.string.accountName), "");
+    }
+
 }

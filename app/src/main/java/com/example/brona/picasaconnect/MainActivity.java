@@ -2,6 +2,7 @@ package com.example.brona.picasaconnect;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -18,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
 
     static Context context;
     AuthenticationManager authenticationManager;
+    PicasaConnect picasaConnect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +41,9 @@ public class MainActivity extends AppCompatActivity {
                 Toast toast = Toast.makeText(context, "works", Toast.LENGTH_SHORT);
                 toast.show();
                 //retrieve account names
-                startService(new Intent(context,TheService.class));//use to start the services
+
                 authenticationManager.showAccountPicker(MainActivity.this);
+
             }
         });
 

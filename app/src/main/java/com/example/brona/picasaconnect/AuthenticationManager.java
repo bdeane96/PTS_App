@@ -9,92 +9,36 @@ import android.accounts.OperationCanceledException;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.logging.Logger;
-
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.functions.Function;
-import io.reactivex.functions.Predicate;
-import io.reactivex.observers.DisposableObserver;
-import io.reactivex.schedulers.Schedulers;
-import retrofit2.Response;
-
-import static com.example.brona.picasaconnect.MainActivity.context;
 
 public class AuthenticationManager {
 
     private static final String TAG = AuthenticationManager.class.getSimpleName();
-    private static final String PICASA_WEB_SERVICE = "lh2"; // Picasa Web Albums service name
+    private static final String PICASA_WEB_SERVICE = "lh2"; // pwa service name
     private static final String GOOGLE_ACCOUNT_TYPE = "com.google";
     private static final int PICK_ACCOUNT_REQUEST = 1;
     private static final int AUTHENTICATE_REQUEST = 2;
 
+    SharedPreferences sharedPref ;//= mActivityContext.getSharedPreferences("uploadedfilepath", mActivityContext.MODE_PRIVATE);
     private Activity mActivityContext;
     private AccountManager mAccountManager;
     private Account mSelectedAccount;
-    private DataManager dataManager;
+    private Token accToken;
     private TokenListener mTokenListener= new TokenListener() {
         @Override
         public void onTokenAcquired(String token, String accountName) {
             Log.d(TAG, String.format("onTokenAcquired token: %s, accountName: %s", token, accountName));
-            HTTPReq httpReq = new HTTPReq();
-            httpReq.httpReq();
-            dataManager = new DataManager(new PicasaService(context));
-            dataManager.setAccountName(context, accountName);
-            dataManager.setToken(token);
-            dataManager.getAlbums();
-            Observable<List<Photo>> albums = dataManager.getPhotos("6475969304088902209").map(new Function<Response<PhotoResponse>, List<Photo>>() {
-                @Override
-                public List<Photo> apply(Response<PhotoResponse> response) throws Exception {
-                    int code = response.raw().networkResponse().code();
-                    if (code == 304) {
-                        return Collections.<Photo>emptyList();
-                    } else {
-                        return response.body().getPhotoFeed().getPhotoList();
-                    }
-                }
-            })
-                    .filter(new Predicate<List<Photo>>() {
-                        @Override
-                        public boolean test(List<Photo> photos) throws Exception {
-                            return !photos.isEmpty();
-                        }
-                    })
-                    .subscribeOn(Schedulers.io());
-
-          //  List<Photo> photos = albums.blockingFirst();
-            //Log.d("album photos","" + photos.size());
-            DisposableObserver<List<Photo>> subscriber = new DisposableObserver<List<Photo>>() {
-                @Override
-                public void onNext(List<Photo> photos) {
-                    Log.d("album photos", photos.toString());
-                    for(int i =0; i <photos.size(); i++){
-                        Photo pic = photos.get(i);
-                        Log.d("album photo", pic.toString());
-                    }
-                }
-
-                @Override
-                public void onError(Throwable e) {
-
-                }
-
-                @Override
-                public void onComplete() {
-                }
-            };
-
-            albums.observeOn(AndroidSchedulers.mainThread())
-                    .subscribeWith(subscriber);
-
-
+            accToken = new Token(token, accountName);
+            setAccountName(accountName);
+            setToken(token);
+            getToken();
+            getAccountName();
+            Intent service = new Intent(mActivityContext,TheService.class);
+            mActivityContext.startService(service);//use to start the services
         }
 
 
@@ -103,7 +47,35 @@ public class AuthenticationManager {
 
         }
     };
+    private void setToken(String token){
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("token", token);
+        editor.commit();
+    }
+
+    private void setAccountName(String accountName){
+
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString("accountName", accountName);
+        editor.commit();
+    }
+    private String getToken(){
+        String token = sharedPref.getString("token", "");
+        Log.d("shared pref", token);
+        return token;
+    }
+
+    private String getAccountName(){
+        String acc = sharedPref.getString("accountName", "");
+        Log.d("shared pref", acc);
+        return acc;
+    }
+
     private String mToken;
+
+    public Token getAccToken(){
+        return accToken;
+    }
 
     public interface TokenListener {
         void onTokenAcquired(String token, String accountName);
@@ -112,6 +84,7 @@ public class AuthenticationManager {
 
     public AuthenticationManager(Activity activity) {
         mActivityContext = activity;
+        sharedPref = mActivityContext.getSharedPreferences("uploadedfilepath", mActivityContext.MODE_PRIVATE);
         mAccountManager = (AccountManager) mActivityContext.getSystemService(MainActivity.ACCOUNT_SERVICE);
     }
 
@@ -257,4 +230,6 @@ public class AuthenticationManager {
             }
         }
     }
+
+
 }
